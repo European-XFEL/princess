@@ -7,6 +7,7 @@ from jupyter_client.kernelspec import KernelSpecManager
 from nbclient import NotebookClient
 import nbformat
 
+
 class CurrentEnvKernelSpecManager(KernelSpecManager):
     """Always launch a Python kernel with the current Python interpreter.
 
@@ -39,6 +40,7 @@ class PrincessNotebookClient(NotebookClient):
             print(text, file=stream, end='')
 
         return super().output(outs, msg, display_id, cell_index)
+
 
 def main(argv=None):
     ap = ArgumentParser()
