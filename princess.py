@@ -33,8 +33,10 @@ class PrincessNotebookClient(NotebookClient):
             text = content.get('text')
         elif msg_type == 'display_data':
             text = content.get('data', {}).get('text/plain')
+            if text:
+                text += '\n'
         elif msg_type == 'error':
-            text = '\n'.join(content.get('traceback', []))
+            text = '\n'.join(content.get('traceback', [])) + '\n'
         else:
             text = None
 
