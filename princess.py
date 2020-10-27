@@ -83,6 +83,8 @@ def main(argv=None):
     if out_filename:
         nbformat.write(nb_out, out_filename)
 
+    return 0
+
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -36,3 +36,8 @@ def test_save_as(tmp_path):
 
     nb_saved = nbformat.read(output_path, as_version=4)
     assert nb_saved.cells[0].outputs[0].text == 'Print to stdout\n'
+
+
+def test_error():
+    assert main([str(this_dir / 'Error.ipynb')]) == 1
+    assert main([str(this_dir / 'Error.ipynb'), '--on-error-resume-next']) == 0
