@@ -22,6 +22,7 @@ class PrincessNotebookClient(NotebookClient):
         return AsyncKernelManager(kernel_spec_manager=CurrentEnvKernelSpecManager())
 
     def output(self, outs, msg, display_id, cell_index):
+        """Display text output, as well as saving it in the notebook"""
         msg_type = msg['msg_type']
         content = msg['content']
         stream = sys.stdout
@@ -43,7 +44,10 @@ class PrincessNotebookClient(NotebookClient):
 
 
 def main(argv=None):
-    ap = ArgumentParser()
+    ap = ArgumentParser(
+        prog='python -m princess',
+        description="Run a Python notebook in the current environment, showing stdout & stderr."
+    )
     ap.add_argument('notebook', help='Notebook file to run')
 
     save_opts = ap.add_mutually_exclusive_group()
