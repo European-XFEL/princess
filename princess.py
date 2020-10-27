@@ -80,7 +80,8 @@ def main(argv=None):
         return 1
 
     out_filename = args.notebook if args.save else args.save_as
-    nbformat.write(nb_out, out_filename)
+    if out_filename:
+        nbformat.write(nb_out, out_filename)
 
 
 if __name__ == '__main__':
