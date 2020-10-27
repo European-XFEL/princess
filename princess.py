@@ -5,6 +5,7 @@ from ipykernel.kernelspec import RESOURCES, get_kernel_dict
 from jupyter_client import AsyncKernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbclient import NotebookClient
+from nbclient.exceptions import CellExecutionError
 import nbformat
 
 
@@ -67,9 +68,14 @@ def main(argv=None):
 
     nb = nbformat.read(args.notebook, as_version=4)
 
-    nb_out = PrincessNotebookClient(
-        nb, allow_errors=args.on_error_resume_next,
-    ).execute()
+    try:
+        nb_out = PrincessNotebookClient(
+            nb, allow_errors=args.on_error_resume_next,
+        ).execute()
+    except CellExecutionError as e:
+        print('\n\n' + '─' * 80)
+        print(e, file=sys.stderr)
+        return 1
 
     out_filename = args.notebook if args.save else args.save_as
     nbformat.write(nb_out, out_filename)
