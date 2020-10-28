@@ -45,7 +45,7 @@ class PrincessNotebookClient(NotebookClient):
             text = None
 
         if text:
-            print(text, file=stream, end='')
+            print(text, file=stream, end='', flush=True)
 
         return super().output(outs, msg, display_id, cell_index)
 
