@@ -18,7 +18,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install nbclient jupyter_client ipykernel pytest
+          pip install nbclient nbformat jupyter_client ipykernel pytest
 
       - name: Run tests
         run: |
