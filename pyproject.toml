@@ -12,7 +12,7 @@ requires-python = ">=3.6"
 requires = [
     "nbclient",
     "nbformat",
-    "jupyter_client",
+    "jupyter_client >=6.1.0",
     "ipykernel",
 ]
 classifiers = [
