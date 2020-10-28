@@ -9,6 +9,11 @@ author-email = "da-support@xfel.eu"
 home-page = "https://github.com/European-XFEL/princess"
 description-file = "README.rst"
 requires-python = ">=3.6"
+requires = [
+    "nbclient",
+    "jupyter_client",
+    "ipykernel",
+]
 classifiers = [
     "Framework :: Jupyter",
     "License :: OSI Approved :: BSD License",
