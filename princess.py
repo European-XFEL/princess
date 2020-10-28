@@ -1,3 +1,5 @@
+"""Please Run IPython Notebook in the Current Environment with Stdout & Stderr
+"""
 from argparse import ArgumentParser
 import sys
 
@@ -7,6 +9,8 @@ from jupyter_client.kernelspec import KernelSpecManager
 from nbclient import NotebookClient
 from nbclient.exceptions import CellExecutionError
 import nbformat
+
+__version__ = '0.1'
 
 
 class CurrentEnvKernelSpecManager(KernelSpecManager):

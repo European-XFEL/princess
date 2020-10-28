@@ -1,0 +1,16 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "princess"
+author = "European XFEL GmbH"
+author-email = "da-support@xfel.eu"
+home-page = "https://github.com/European-XFEL/princess"
+description-file = "README.rst"
+requires-python = ">=3.6"
+classifiers = [
+    "Framework :: Jupyter",
+    "License :: OSI Approved :: BSD License",
+]
+
