@@ -74,20 +74,26 @@ def main(argv=None):
 
     nb = nbformat.read(args.notebook, as_version=4)
 
+    # Remove any existing ouput before executing
+    for cell in nb.cells:
+        if 'outputs' in cell:
+            cell.outputs = []
+
+    exit_code = 0
     try:
-        nb_out = PrincessNotebookClient(
+        PrincessNotebookClient(
             nb, allow_errors=args.on_error_resume_next,
         ).execute()
     except CellExecutionError as e:
         print('\n\n' + '─' * 80)
         print(e, file=sys.stderr)
-        return 1
+        exit_code = 1
 
     out_filename = args.notebook if args.save else args.save_as
     if out_filename:
-        nbformat.write(nb_out, out_filename)
+        nbformat.write(nb, out_filename)
 
-    return 0
+    return exit_code
 
 
 if __name__ == '__main__':

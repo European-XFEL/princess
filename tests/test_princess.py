@@ -41,3 +41,13 @@ def test_save_as(tmp_path):
 def test_error():
     assert main([str(this_dir / 'Error.ipynb')]) == 1
     assert main([str(this_dir / 'Error.ipynb'), '--on-error-resume-next']) == 0
+
+
+def test_error_save(tmp_path):
+    shutil.copy2(this_dir / 'Error.ipynb', tmp_path)
+    assert main([str(tmp_path / 'Error.ipynb'), '--save']) == 1
+
+    nb_saved = nbformat.read(tmp_path / 'Error.ipynb', as_version=4)
+    err_output = nb_saved.cells[0].outputs[0]
+    assert err_output.output_type == 'error'
+    assert err_output.ename == 'ZeroDivisionError'
