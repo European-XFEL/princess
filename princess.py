@@ -66,11 +66,24 @@ def main(argv=None):
         '--save-as', help="Save the notebook with output to another file"
     )
     ap.add_argument(
+        '--discard-on-error', action='store_true',
+        help="Don't save the notebook after an error. Use with --save/--save-as."
+    )
+    ap.add_argument(
         '--on-error-resume-next', action='store_true',
         help="Execute remaining cells after an error"
     )
 
     args = ap.parse_args(argv)
+
+    out_filename = args.notebook if args.save else args.save_as
+    if args.discard_on_error and not out_filename:
+        print("--discard-on-error requires --save or --save-as", file=sys.stderr)
+        return 2
+
+    if args.discard_on_error and args.on_error_resume_next:
+        print("--discard-on-error doesn't work with --on-error-resume-next", file=sys.stderr)
+        return 2
 
     nb = nbformat.read(args.notebook, as_version=4)
 
@@ -89,8 +102,7 @@ def main(argv=None):
         print(e, file=sys.stderr)
         exit_code = 1
 
-    out_filename = args.notebook if args.save else args.save_as
-    if out_filename:
+    if out_filename and ((exit_code == 0) or not args.discard_on_error):
         nbformat.write(nb, out_filename)
 
     return exit_code

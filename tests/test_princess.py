@@ -51,3 +51,9 @@ def test_error_save(tmp_path):
     err_output = nb_saved.cells[0].outputs[0]
     assert err_output.output_type == 'error'
     assert err_output.ename == 'ZeroDivisionError'
+
+    new_path = tmp_path / 'Error2.ipynb'
+    assert main([
+        str(tmp_path / 'Error.ipynb'), '--save-as', str(new_path), '--discard-on-error'
+    ]) == 1
+    assert not new_path.exists()
