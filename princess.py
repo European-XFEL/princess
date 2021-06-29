@@ -66,28 +66,46 @@ def main(argv=None):
         '--save-as', help="Save the notebook with output to another file"
     )
     ap.add_argument(
+        '--discard-on-error', action='store_true',
+        help="Don't save the notebook after an error. Use with --save/--save-as."
+    )
+    ap.add_argument(
         '--on-error-resume-next', action='store_true',
         help="Execute remaining cells after an error"
     )
 
     args = ap.parse_args(argv)
 
+    out_filename = args.notebook if args.save else args.save_as
+    if args.discard_on_error and not out_filename:
+        print("--discard-on-error requires --save or --save-as", file=sys.stderr)
+        return 2
+
+    if args.discard_on_error and args.on_error_resume_next:
+        print("--discard-on-error doesn't work with --on-error-resume-next", file=sys.stderr)
+        return 2
+
     nb = nbformat.read(args.notebook, as_version=4)
 
+    # Remove any existing ouput before executing
+    for cell in nb.cells:
+        if 'outputs' in cell:
+            cell.outputs = []
+
+    exit_code = 0
     try:
-        nb_out = PrincessNotebookClient(
+        PrincessNotebookClient(
             nb, allow_errors=args.on_error_resume_next,
         ).execute()
     except CellExecutionError as e:
         print('\n\n' + '─' * 80)
         print(e, file=sys.stderr)
-        return 1
+        exit_code = 1
 
-    out_filename = args.notebook if args.save else args.save_as
-    if out_filename:
-        nbformat.write(nb_out, out_filename)
+    if out_filename and ((exit_code == 0) or not args.discard_on_error):
+        nbformat.write(nb, out_filename)
 
-    return 0
+    return exit_code
 
 
 if __name__ == '__main__':
