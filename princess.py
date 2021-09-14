@@ -12,7 +12,7 @@ from nbclient import NotebookClient
 from nbclient.exceptions import CellExecutionError
 import nbformat
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 
 class CurrentEnvKernelSpecManager(KernelSpecManager):
