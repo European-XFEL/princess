@@ -1,15 +1,15 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
+requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "princess"
-author = "European XFEL GmbH"
-author-email = "da-support@xfel.eu"
-home-page = "https://github.com/European-XFEL/princess"
-description-file = "README.rst"
+[project]
+name = "princess"
+authors = [
+    {name = "European XFEL GmbH", email = "da-support@xfel.eu"},
+]
+readme = "README.rst"
 requires-python = ">=3.6"
-requires = [
+dependencies = [
     "nbclient",
     "nbformat",
     "jupyter_client >=6.1.0",
@@ -19,4 +19,7 @@ classifiers = [
     "Framework :: Jupyter",
     "License :: OSI Approved :: BSD License",
 ]
+dynamic = ["version", "description"]
 
+[project.urls]
+Source = "https://github.com/European-XFEL/princess"
