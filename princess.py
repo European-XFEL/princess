@@ -1,7 +1,9 @@
 """Please Run IPython Notebook in the Current Environment with Stdout & Stderr
 """
 from argparse import ArgumentParser
+import os
 import sys
+from tempfile import TemporaryDirectory
 
 from ipykernel.kernelspec import RESOURCES, get_kernel_dict
 from jupyter_client import AsyncKernelManager
@@ -23,8 +25,26 @@ class CurrentEnvKernelSpecManager(KernelSpecManager):
 
 
 class PrincessNotebookClient(NotebookClient):
+    __sockets_tmpdir = None
+
     def create_kernel_manager(self):
-        return AsyncKernelManager(kernel_spec_manager=CurrentEnvKernelSpecManager())
+        kwargs = {}
+        # Use ipc transport (Unix domain sockets) with a temp dir if possible;
+        # something else may claim TCP sockets while the kernel is starting.
+        if os.name == 'posix':
+            self.__sockets_tmpdir = TemporaryDirectory(prefix="jupyter-kernel-")
+            kwargs['transport'] = 'ipc'
+            kwargs['ip'] = os.path.join(self.__sockets_tmpdir.name, 'socket')
+
+        return AsyncKernelManager(
+            kernel_spec_manager=CurrentEnvKernelSpecManager(),
+            **kwargs,
+        )
+
+    async def _async_cleanup_kernel(self):
+        await super()._async_cleanup_kernel()
+        if self.__sockets_tmpdir is not None:
+            self.__sockets_tmpdir.cleanup()
 
     def output(self, outs, msg, display_id, cell_index):
         """Display text output, as well as saving it in the notebook"""
