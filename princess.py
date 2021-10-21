@@ -60,7 +60,11 @@ class PrincessNotebookClient(NotebookClient):
             if text:
                 text += '\n'
         elif msg_type == 'error':
-            text = '\n'.join(content.get('traceback', [])) + '\n'
+            ename, evalue = content.get('ename'), content.get('evalue', '')
+            if ename == 'SystemExit' and evalue.isdigit():
+                text = None  # Exit code handled via CellExecutionError
+            else:
+                text = '\n'.join(content.get('traceback', [])) + '\n'
         else:
             text = None
 
@@ -118,9 +122,13 @@ def main(argv=None):
             nb, allow_errors=args.on_error_resume_next,
         ).execute()
     except CellExecutionError as e:
-        print('\n\n' + '─' * 80)
-        print(e, file=sys.stderr)
-        exit_code = 1
+        if e.ename == 'SystemExit' and e.evalue.isdigit():
+            # From e.g. sys.exit(0) in the notebook - don't display an error.
+            exit_code = int(e.evalue)
+        else:
+            print('\n\n' + '─' * 80)
+            print(e, file=sys.stderr)
+            exit_code = 1
 
     if out_filename and ((exit_code == 0) or not args.discard_on_error):
         nbformat.write(nb, out_filename)
