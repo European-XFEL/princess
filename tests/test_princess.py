@@ -16,6 +16,15 @@ def test_output(capsys):
     assert 'ZeroDivisionError' in captured.out
 
 
+def test_prepend(capsys):
+    main([f'{this_dir}/Sample.ipynb',
+          '--prepend-code-cell', f'{this_dir}/prepend.py'])
+
+    captured = capsys.readouterr()
+    assert 'Prepended cell\n' in captured.out
+    assert 'Print to stdout\n' in captured.out
+
+
 def test_save(tmp_path):
     nb_orig = nbformat.read(this_dir / 'Sample.ipynb', as_version=4)
     assert nb_orig.cells[0].outputs == []

@@ -97,6 +97,10 @@ def main(argv=None):
         '--on-error-resume-next', action='store_true',
         help="Execute remaining cells after an error"
     )
+    ap.add_argument(
+        '--prepend-code-cell', action='store', metavar='FILE',
+        help='Prepend a code cell to the notebook from file.'
+    )
 
     args = ap.parse_args(argv)
 
@@ -110,6 +114,12 @@ def main(argv=None):
         return 2
 
     nb = nbformat.read(args.notebook, as_version=4)
+
+    if args.prepend_code_cell:
+        with open(args.prepend_code_cell, 'r') as f:
+            source = f.read()
+
+        nb['cells'].insert(0, nbformat.v4.new_code_cell(source))
 
     # Remove any existing ouput before executing
     for cell in nb.cells:
