@@ -35,9 +35,9 @@ class PrincessNotebookClient(NotebookClient):
     km: Optional[AsyncKernelManager] = None
     kc: Optional[AsyncKernelClient] = None
 
-    def __init__(self, nb, extra_setup=None, **kwargs):
+    def __init__(self, nb, run_before=None, **kwargs):
         super().__init__(nb, **kwargs)
-        self.extra_setup = extra_setup
+        self.run_before = run_before
 
     def create_kernel_manager(self):
         kwargs = {}
@@ -62,9 +62,8 @@ class PrincessNotebookClient(NotebookClient):
     async def async_setup_kernel(self, **kwargs):
         async with super().async_setup_kernel(**kwargs):
             assert self.kc is not None
-            if self.extra_setup:
-                print("Executing", self.extra_setup)
-                await self.kc.execute(self.extra_setup, silent=True, reply=True)
+            if self.run_before:
+                await self.kc.execute(self.run_before, silent=True, reply=True)
             yield
 
     def output(self, outs, msg, display_id, cell_index):
@@ -119,7 +118,7 @@ def main(argv=None):
         help="Execute remaining cells after an error"
     )
     ap.add_argument(
-        '--extra-setup', metavar='FILE', type=Path,
+        '--run-before', metavar='FILE', type=Path,
         help="A file of Python code to execute in the kernel before the notebook"
     )
 
@@ -134,8 +133,7 @@ def main(argv=None):
         print("--discard-on-error doesn't work with --on-error-resume-next", file=sys.stderr)
         return 2
 
-    extra_setup = args.extra_setup.read_text() if args.extra_setup else ''
-    print(f"Extra setup: {extra_setup!r}")
+    run_before = args.run_before.read_text() if args.run_before else ''
 
     nb = nbformat.read(args.notebook, as_version=4)
 
@@ -147,7 +145,7 @@ def main(argv=None):
     exit_code = 0
     try:
         PrincessNotebookClient(
-            nb, extra_setup=extra_setup, allow_errors=args.on_error_resume_next,
+            nb, run_before=run_before, allow_errors=args.on_error_resume_next,
         ).execute()
     except CellExecutionError as e:
         if e.ename == 'SystemExit' and e.evalue.isdigit():

@@ -59,11 +59,11 @@ def test_error_save(tmp_path):
     assert not new_path.exists()
 
 
-def test_extra_setup(tmp_path, monkeypatch):
+def test_run_before(tmp_path, monkeypatch):
     pre_path = tmp_path / 'pre.py'
     pre_path.write_text("open('foo.touch', 'w')\n")
 
     monkeypatch.chdir(tmp_path)
-    main([str(this_dir / 'Sample.ipynb'), '--extra-setup', str(pre_path)])
+    main([str(this_dir / 'Sample.ipynb'), '--run-before', str(pre_path)])
 
     assert (tmp_path / 'foo.touch').is_file()
