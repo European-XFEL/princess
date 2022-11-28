@@ -8,7 +8,7 @@ authors = [
     {name = "European XFEL GmbH", email = "da-support@xfel.eu"},
 ]
 readme = "README.rst"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 dependencies = [
     "nbclient",
     "nbformat",

@@ -1,12 +1,15 @@
 """Please Run IPython Notebook in the Current Environment with Stdout & Stderr
 """
-from argparse import ArgumentParser
 import os
 import sys
+from argparse import ArgumentParser
+from contextlib import asynccontextmanager
+from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Optional
 
 from ipykernel.kernelspec import RESOURCES, get_kernel_dict
-from jupyter_client import AsyncKernelManager
+from jupyter_client import AsyncKernelClient, AsyncKernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbclient import NotebookClient
 from nbclient.exceptions import CellExecutionError
@@ -27,6 +30,15 @@ class CurrentEnvKernelSpecManager(KernelSpecManager):
 class PrincessNotebookClient(NotebookClient):
     __sockets_tmpdir = None
 
+    # nbclient allows these to be their non-async equivalents, but princess
+    # always uses the async variants (the default for nbclient anyway)
+    km: Optional[AsyncKernelManager] = None
+    kc: Optional[AsyncKernelClient] = None
+
+    def __init__(self, nb, run_before=None, **kwargs):
+        super().__init__(nb, **kwargs)
+        self.run_before = run_before
+
     def create_kernel_manager(self):
         kwargs = {}
         # Use ipc transport (Unix domain sockets) with a temp dir if possible;
@@ -45,6 +57,14 @@ class PrincessNotebookClient(NotebookClient):
         await super()._async_cleanup_kernel()
         if self.__sockets_tmpdir is not None:
             self.__sockets_tmpdir.cleanup()
+
+    @asynccontextmanager
+    async def async_setup_kernel(self, **kwargs):
+        async with super().async_setup_kernel(**kwargs):
+            assert self.kc is not None
+            if self.run_before:
+                await self.kc.execute(self.run_before, silent=True, reply=True)
+            yield
 
     def output(self, outs, msg, display_id, cell_index):
         """Display text output, as well as saving it in the notebook"""
@@ -97,6 +117,10 @@ def main(argv=None):
         '--on-error-resume-next', action='store_true',
         help="Execute remaining cells after an error"
     )
+    ap.add_argument(
+        '--run-before', metavar='FILE', type=Path,
+        help="A file of Python code to execute in the kernel before the notebook"
+    )
 
     args = ap.parse_args(argv)
 
@@ -109,6 +133,8 @@ def main(argv=None):
         print("--discard-on-error doesn't work with --on-error-resume-next", file=sys.stderr)
         return 2
 
+    run_before = args.run_before.read_text() if args.run_before else ''
+
     nb = nbformat.read(args.notebook, as_version=4)
 
     # Remove any existing ouput before executing
@@ -119,7 +145,7 @@ def main(argv=None):
     exit_code = 0
     try:
         PrincessNotebookClient(
-            nb, allow_errors=args.on_error_resume_next,
+            nb, run_before=run_before, allow_errors=args.on_error_resume_next,
         ).execute()
     except CellExecutionError as e:
         if e.ename == 'SystemExit' and e.evalue.isdigit():

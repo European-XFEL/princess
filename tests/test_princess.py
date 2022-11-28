@@ -57,3 +57,13 @@ def test_error_save(tmp_path):
         str(tmp_path / 'Error.ipynb'), '--save-as', str(new_path), '--discard-on-error'
     ]) == 1
     assert not new_path.exists()
+
+
+def test_run_before(tmp_path, monkeypatch):
+    pre_path = tmp_path / 'pre.py'
+    pre_path.write_text("open('foo.touch', 'w')\n")
+
+    monkeypatch.chdir(tmp_path)
+    main([str(this_dir / 'Sample.ipynb'), '--run-before', str(pre_path)])
+
+    assert (tmp_path / 'foo.touch').is_file()
