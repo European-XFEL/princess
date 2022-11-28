@@ -13,6 +13,10 @@ Usage::
 Options:
 
 - ``--save`` and ``--save-as Result.ipynb`` to save the notebook after running.
+- ``--discard-on-error`` cancels ``--save[-as]`` if an error occurs.
+- ``--run-before before.py`` runs the code from the Python file in the kernel,
+  before running the notebook. This can be used to set up things like logging
+  to behave differently from when the notebook is run interactively.
 - ``--on-error-resume-next`` ignores errors from running notebook code and
   continues with the next cell. This is usually not a good idea.
 
